@@ -67,10 +67,12 @@ public class GUI implements ActionListener
 
     JPasswordField passwordField;
     private JTextField textField;
+    private JLabel titleLabel;
     private JLabel textLabel;
     private JFrame frame;
     private JDialog settingsDialog;
     private JDialog aboutDialog;
+    private JTextField settingsName;
     private JTextField settingsCode;
     private JPasswordField settingsPass;
     private File configFile = new File(".et-otp.properties");
@@ -110,9 +112,9 @@ public class GUI implements ActionListener
         c.weightx = 1;
         c.insets = new Insets(10, 10, 20, 10);
         c.anchor = GridBagConstraints.NORTH;
-        JLabel label = new JLabel(PROGNAME + " Soft Token", SwingConstants.CENTER);
-        label.setFont(new Font("Serif", Font.BOLD, 16));
-        gui.frame.add(label, c);
+        gui.titleLabel = new JLabel(PROGNAME + " Soft Token", SwingConstants.CENTER);
+        gui.titleLabel.setFont(new Font("Serif", Font.BOLD, 16));
+        gui.frame.add(gui.titleLabel, c);
 
         c.fill = GridBagConstraints.HORIZONTAL;
         c.gridx = 1;
@@ -123,7 +125,7 @@ public class GUI implements ActionListener
         c.weightx = 1;
         c.anchor = GridBagConstraints.CENTER;
         c.insets = new Insets(0,10,5,10);
-        label = new JLabel("Unlock Password:");
+        JLabel label = new JLabel("Unlock Password:");
         gui.frame.add(label, c);
 
         c.fill = GridBagConstraints.HORIZONTAL;
@@ -396,6 +398,7 @@ public class GUI implements ActionListener
             InvalidKeyException, IllegalBlockSizeException,
             BadPaddingException, FileNotFoundException, IOException
     {
+        String name = settingsName.getText();
         byte[] codeBytes;
         codeBytes = Base32.decode(code);
         SecretKeyFactory f = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
@@ -414,7 +417,7 @@ public class GUI implements ActionListener
         System.out.println("WRITE salt=" + Base32.encode(salt) + " encrypted=" + Base32.encode(enc));
 
         Properties p = new Properties();
-        p.put("key.1.name" , "test");
+        p.put("key.1.name" , name);
         p.put("key.1.salt", Base32.encode(salt));
         p.put("key.1.encoded", Base32.encode(enc));
         OutputStream os = new FileOutputStream(configFile);
@@ -431,6 +434,7 @@ public class GUI implements ActionListener
     {
         SecretKeyFactory f = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
 
+        String name;
         byte[] salt;
         SecretKey password;
         Cipher c;
@@ -440,10 +444,14 @@ public class GUI implements ActionListener
         p = new Properties();
         p.load(is); is.close();
 
+        name = (String)p.get("key.1.name");
         salt = Base32.decode((String)p.get("key.1.salt"));
         enc = Base32.decode((String)p.get("key.1.encoded"));
 
         System.out.println("READ salt=" + Base32.encode(salt) + " encrypted=" + Base32.encode(enc));
+
+        titleLabel.setText(name + " - " + PROGNAME + " Soft Token");
+        titleLabel.setFont(new Font("Serif", Font.BOLD, 16));
 
         password = f.generateSecret(new PBEKeySpec(pass, salt, 1000, 128));
         // TODO: overwrite pass
@@ -471,28 +479,42 @@ public class GUI implements ActionListener
         c.weightx = 0;
         c.weighty = 0;
         c.insets = new Insets(10, 10, 10, 10);
-        dia.add(new JLabel("Code (base32):", JLabel.RIGHT), c);
+        dia.add(new JLabel("Name (Optional):", JLabel.RIGHT), c);
 
         c.gridx = 2;
         c.gridy = 1;
+        c.weightx = 1;
+        c.weighty = 0;
+        settingsName = new JTextField();
+        dia.add(settingsName, c);
+
+        c.gridx = 1;
+        c.gridy = 2;
+        c.weightx = 0;
+        c.weighty = 0;
+        c.insets = new Insets(10, 10, 10, 10);
+        dia.add(new JLabel("Code (base32):", JLabel.RIGHT), c);
+
+        c.gridx = 2;
+        c.gridy = 2;
         c.weightx = 1;
         c.weighty = 0;
         settingsCode = new JTextField();
         dia.add(settingsCode, c);
 
         c.gridx = 1;
-        c.gridy = 2;
+        c.gridy = 3;
         c.weightx = 0;
         dia.add(new JLabel("Password:", SwingConstants.RIGHT), c);
 
         c.gridx = 2;
-        c.gridy = 2;
+        c.gridy = 3;
         c.weightx = 1;
         settingsPass = new JPasswordField();
         dia.add(settingsPass, c);
 
         c.gridx = 1;
-        c.gridy = 3;
+        c.gridy = 4;
         c.gridwidth = 2;
         c.weightx = 1;
         c.weighty = 1;
@@ -502,7 +524,7 @@ public class GUI implements ActionListener
 
         String file = configFile.getAbsolutePath();
         c.gridx = 1;
-        c.gridy = 4;
+        c.gridy = 5;
         c.weightx = 1;
         c.weighty = 0;
         c.gridwidth = 2;
@@ -511,7 +533,7 @@ public class GUI implements ActionListener
         dia.add(settingsFileLabel, c);
 
         c.gridx = 1;
-        c.gridy = 5;
+        c.gridy = 6;
         c.weightx = 1;
         c.gridwidth = 2;
         c.insets = new Insets(0,10,10,10);
