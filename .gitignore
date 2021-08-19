@@ -1,6 +1,7 @@
 antBuild/
 /.et-otp.properties
 target/
+et-otp.iml
 .idea
 .DS_Store
 
