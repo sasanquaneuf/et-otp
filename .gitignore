@@ -1,3 +1,4 @@
 antBuild/
 /.et-otp.properties
 target/
+.idea
